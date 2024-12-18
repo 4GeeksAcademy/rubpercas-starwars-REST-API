@@ -20,12 +20,12 @@ class User(db.Model):
             # do not serialize the password, it's a security breach
         }
 
-class People(db.Model):
+class Character(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
     description = db.Column(db.String(250))
 
-    favorites = db.relationship("Favorite", back_populates="people")
+    favorites = db.relationship("Favorite", back_populates="character")
 
     def serialize(self):
         return {
@@ -53,7 +53,7 @@ class Planet(db.Model):
 class Favorite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    character_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=True)
+    character_id = db.Column(db.Integer, db.ForeignKey('character.id'), nullable=True)
     planet_id = db.Column(db.Integer, db.ForeignKey('planet.id'), nullable=True)
 
     user = db.relationship("User", back_populates="favorites")
