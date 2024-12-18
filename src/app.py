@@ -36,14 +36,12 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-# Get all people
 @app.route('/people', methods=['GET'])
 def get_all_people():
     people = Character.query.all()
     people_list = [person.serialize() for person in people]
     return jsonify(people_list), 200
 
-# Get people by ID
 @app.route('/people/<int:people_id>', methods=['GET'])
 def get_people_by_id(people_id):
     person = Character.query.get(people_id)
@@ -51,14 +49,12 @@ def get_people_by_id(people_id):
         return jsonify({"msg": "Character not found"}), 404
     return jsonify(person.serialize()), 200
 
-# Get all planets
 @app.route('/planets', methods=['GET'])
 def get_all_planets():
     planets = Planet.query.all()
     planet_list = [planet.serialize() for planet in planets]
     return jsonify(planet_list), 200
 
-# Get planet by ID
 @app.route('/planets/<int:planet_id>', methods=['GET'])
 def get_planet_by_id(planet_id):
     planet = Planet.query.get(planet_id)
@@ -66,14 +62,12 @@ def get_planet_by_id(planet_id):
         return jsonify({"msg": "Planet not found"}), 404
     return jsonify(planet.serialize()), 200
 
-# Get all users
 @app.route('/users', methods=['GET'])
 def get_all_users():
     users = User.query.all()
     user_list = [user.serialize() for user in users]
     return jsonify(user_list), 200
 
-# Get user favorites
 @app.route('/users/<int:user_id>/favorites', methods=['GET'])
 def get_user_favorites(user_id):
     user = User.query.get(user_id)
@@ -81,11 +75,10 @@ def get_user_favorites(user_id):
         return jsonify({"msg": "User not found"}), 404
     favorites = Favorite.query.filter_by(user_id=user.id).all()
     if not favorites:
-        return jsonify({"msg": "No favorites found"}), 404
+        return jsonify({"msg": "Not favorites found"}), 404
     favorites_list = [favorite.serialize() for favorite in favorites]
     return jsonify(favorites_list), 200
 
-# Get specific favorite character of user
 @app.route('/favorite/people/<int:people_id>', methods=['GET'])
 def get_favorite_character(people_id):
     user_id = 1  # Example user ID
@@ -94,10 +87,8 @@ def get_favorite_character(people_id):
     if not favorite:
         return jsonify({"msg": "Favorite character not found"}), 404
     
-    # Retornar el personaje favorito si se encuentra
     return jsonify(favorite.serialize()), 200
 
-# Get specific favorite planet of user
 @app.route('/favorite/planets/<int:planet_id>', methods=['GET'])
 def get_favorite_planet(planet_id):
     user_id = 1  # Example user ID
@@ -108,7 +99,6 @@ def get_favorite_planet(planet_id):
 
     return jsonify(favorite.serialize()), 200
 
-# Add favorite planet
 @app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
 def add_favorite_planet(planet_id):
     user_id = 1  # Example user ID
@@ -126,7 +116,6 @@ def add_favorite_planet(planet_id):
     db.session.commit()
     return jsonify(new_favorite.serialize()), 201
 
-# Add favorite character
 @app.route('/favorite/people/<int:people_id>', methods=['POST'])
 def add_favorite_character(people_id):
     user_id = 1  # Example user ID
@@ -144,7 +133,6 @@ def add_favorite_character(people_id):
     db.session.commit()
     return jsonify(new_favorite.serialize()), 201
 
-# Delete favorite planet
 @app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
 def delete_favorite_planet(planet_id):
     user_id = 1  # Example user ID
@@ -153,9 +141,8 @@ def delete_favorite_planet(planet_id):
         return jsonify({"msg": "Favorite planet not found"}), 404
     db.session.delete(favorite)
     db.session.commit()
-    return jsonify({"msg": "Favorite planet deleted"}), 200
+    return jsonify({"msg": "Favorite planet was deleted"}), 200
 
-# Delete favorite character
 @app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
 def delete_favorite_character(people_id):
     user_id = 1  # Example user ID
@@ -164,7 +151,8 @@ def delete_favorite_character(people_id):
         return jsonify({"msg": "Favorite character not found"}), 404
     db.session.delete(favorite)
     db.session.commit()
-    return jsonify({"msg": "Favorite character deleted"}), 200
+    return jsonify({"msg": "Favorite character was deleted"}), 200
+
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
