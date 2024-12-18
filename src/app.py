@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Character, Planet, Favorite
+from models import db, User, People, Planet, Favorite
 #from models import Person
 
 app = Flask(__name__)
@@ -39,14 +39,14 @@ def sitemap():
 # Get all people
 @app.route('/people', methods=['GET'])
 def get_all_people():
-    people = Character.query.all()
+    people = People.query.all()
     people_list = [person.serialize() for person in people]
     return jsonify(people_list), 200
 
 # Get people by ID
 @app.route('/people/<int:people_id>', methods=['GET'])
 def get_people_by_id(people_id):
-    person = Character.query.get(people_id)
+    person = People.query.get(people_id)
     if person is None:
         return jsonify({"msg": "Character not found"}), 404
     return jsonify(person.serialize()), 200
@@ -133,7 +133,7 @@ def add_favorite_character(people_id):
     user = User.query.get(user_id)
     if not user:
         return jsonify({"msg": "User not found"}), 404
-    character = Character.query.get(people_id)
+    character = People.query.get(people_id)
     if not character:
         return jsonify({"msg": "Character not found"}), 404
     existing_favorite = Favorite.query.filter_by(user_id=user.id, character_id=character.id).first()
