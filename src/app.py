@@ -44,19 +44,20 @@ def create_character():
     try:
         body = request.get_json() 
         if not body or "name" not in body or "gender" not in body or "hair_color" not in body or "description" not in body:
-            return jsonify({"msg": "Invalid input"}), 400
+            return jsonify({"msg": "Input invalido"}), 400
 
-        new_people = Character(
+        new_character = Character(
             name=body["name"],
             description=body["description"],
             gender=body["gender"],
             hair_color=body["hair_color"]
         )
-        db.session.add(new_people)
+        db.session.add(new_character)
         db.session.commit()
-        return jsonify({"msg": "Character has been created successfully"}), 201
+        print(new_character.id)    
+        return jsonify({"msg": "Character ha sido creado satisfactoriamente"}), 201
     except Exception as error:
-        return jsonify({"msg": "Server error", "error": str(error)}), 500
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
 
 #Actualizar personaje por id
 @app.route('/people/edit/<int:people_id>', methods=['PUT'])
@@ -75,7 +76,7 @@ def update_one_people(people_id):
         return people.serialize(), 200
 
     except Exception as error:
-        return jsonify({"msg": "Server error", "error": str(error)}), 500
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
 
 #Toda la lista de personajes
 @app.route('/people', methods=['GET'])
@@ -90,9 +91,22 @@ def get_all_people():
 def get_people_by_id(people_id):
     person = Character.query.get(people_id)
     if person is None:
-        return jsonify({"msg": "Character not found"}), 404
+        return jsonify({"msg": "Character no encontrado"}), 404
     return jsonify(person.serialize()), 200
 
+#Eliminar personaje por id
+@app.route('/people/<int:people_id>', methods=['DELETE'])
+def delete_character(people_id):
+    try:
+        character = Character.query.get(people_id)
+        if not character:
+            return jsonify({"msg": f"Character {people_id} no encontrado"}), 404
+
+        db.session.delete(character)
+        db.session.commit()
+        return jsonify({"msg": f"Character {people_id} ha sido eliminado satisfactoriamente"}), 200
+    except Exception as error:
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
 
 #Endpoints de planetas
 
@@ -102,7 +116,7 @@ def create_one_planet():
     try:
         body = request.get_json() 
         if not body or "name" not in body or "population" not in body or "climate" not in body or "terrain" not in body:
-            return jsonify({"msg": "Invalid input"}), 400
+            return jsonify({"msg": "Input invalido"}), 400
 
         new_planet = Planet(
             name=body["name"],
@@ -112,9 +126,9 @@ def create_one_planet():
         )
         db.session.add(new_planet)
         db.session.commit()
-        return jsonify({"msg": "Planet has been created successfully"}), 201
+        return jsonify({"msg": "Planet ha sido creado satisfactoriamente"}), 201
     except Exception as error:
-        return jsonify({"msg": "Server error", "error": str(error)}), 500
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
 
 #Editar planeta por id
 @app.route('/planet/edit/<int:planet_id>', methods=['PUT'])
@@ -122,7 +136,7 @@ def update_one_planet(planet_id):
     try:
         planet = Planet.query.get(planet_id)
         if planet is None:
-            return jsonify({"msg": f"Planet {planet_id} not found"}), 404
+            return jsonify({"msg": f"Planet {planet_id} no encontrado"}), 404
 
         body = request.get_json()
         planet.name = body.get("name", planet.name)
@@ -133,7 +147,7 @@ def update_one_planet(planet_id):
         return planet.serialize(), 200
 
     except Exception as error:
-        return jsonify({"msg": "Server error", "error": str(error)}), 500
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
     
 #Todos los planetas
 @app.route('/planets', methods=['GET'])
@@ -147,8 +161,22 @@ def get_all_planets():
 def get_planet_by_id(planet_id):
     planet = Planet.query.get(planet_id)
     if planet is None:
-        return jsonify({"msg": "Planet not found"}), 404
+        return jsonify({"msg": "Planet no encontrado"}), 404
     return jsonify(planet.serialize()), 200
+
+#Para eliminar planeta por id
+@app.route('/planets/<int:planet_id>', methods=['DELETE'])
+def delete_planet(planet_id):
+    try:
+        planet = Planet.query.get(planet_id)
+        if not planet:
+            return jsonify({"msg": f"Planet {planet_id} no encontrado"}), 404
+
+        db.session.delete(planet)
+        db.session.commit()
+        return jsonify({"msg": f"Planet {planet_id} ha sido eliminado satisfactoriamente"}), 200
+    except Exception as error:
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
 
 #Para crear un usuario
 @app.route('/users', methods=['POST'])
@@ -156,7 +184,7 @@ def create_user():
     try:
         body = request.get_json()  
         if not body or "email" not in body or "password" not in body:
-            return jsonify({"msg": "Invalid input"}), 400
+            return jsonify({"msg": "Input invalido"}), 400
 
         new_user = User(
             email=body["email"],
@@ -165,9 +193,9 @@ def create_user():
         )
         db.session.add(new_user)
         db.session.commit()
-        return jsonify({"msg": "User has been created successfully"}), 201
+        return jsonify({"msg": "User ha sido creado satisfactoriamente"}), 201
     except Exception as error:
-        return jsonify({"msg": "Server error", "error": str(error)}), 500
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
     
 #Para editar un usuario
 @app.route('/users/edit/<int:user_id>', methods=['PUT'])
@@ -175,7 +203,7 @@ def update_one_user(user_id):
     try:
         user = User.query.get(user_id)
         if user is None:
-            return jsonify({"msg": f"User {user_id} not found"}), 404
+            return jsonify({"msg": f"User {user_id} no encontrado"}), 404
 
         body = request.get_json()
         user.email = body.get("email", user.email)
@@ -185,38 +213,40 @@ def update_one_user(user_id):
         return user.serialize(), 200
 
     except Exception as error:
-        return jsonify({"msg": "Server error", "error": str(error)}), 500
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
 
-#Para todos los usuarios
+#Para obtener todos los usuarios
 @app.route('/users', methods=['GET'])
 def get_all_users():
     users = User.query.all()
     user_list = [user.serialize() for user in users]
     return jsonify(user_list), 200
 
-#Para un solo usuario
+#Para obtener un solo usuario
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_one_user(user_id):
     try:
         user = User.query.get(user_id)
         if user is None:
-            return jsonify ({"msg":f"user {user_id} not found"}), 404
+            return jsonify ({"msg":f"user {user_id} no encontrado"}), 404
         serialize_user = user.serialize()
         return serialize_user, 200
     except Exception as error: 
-        return jsonify ({"msg":"Server error", "error": str(error)}), 500
+        return jsonify ({"msg":"Error del servidor", "error": str(error)}), 500
 
-#Para los favoritos de un solo usuario
-@app.route('/users/<int:user_id>/favorites', methods=['GET'])
-def get_user_favorites(user_id):
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({"msg": "User not found"}), 404
-    favorites = Favorite.query.filter_by(user_id=user.id).all()
-    if not favorites:
-        return jsonify({"msg": "Not favorites found"}), 404
-    favorites_list = [favorite.serialize() for favorite in favorites]
-    return jsonify(favorites_list), 200
+#Para eliminar usuario por id
+@app.route('/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"msg": f"User {user_id} no encontrado"}), 404
+
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({"msg": f"User {user_id} ha sido eliminado satisfactoriamente"}), 200
+    except Exception as error:
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
 
 #Endpoints para vehiculos
 #Para crear vehiculos
@@ -225,7 +255,7 @@ def create_one_vehicle():
     try:
         body = request.get_json()
         if not body or "name" not in body or "cargo_capacity" not in body or "length" not in body:
-            return jsonify({"msg": "Invalid input"}), 400
+            return jsonify({"msg": "Input invalido"}), 400
 
         new_vehicle = Vehicle(
             name=body["name"],
@@ -234,9 +264,9 @@ def create_one_vehicle():
         )
         db.session.add(new_vehicle)
         db.session.commit()
-        return jsonify({"msg": "Vehicle has been created successfully"}), 201
+        return jsonify({"msg": "Vehicle ha sido creado satisfactoriamente"}), 201
     except Exception as error:
-        return jsonify({"msg": "Server error", "error": str(error)}), 500
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
 
 #Para editar vehiculos
 @app.route('/edit/vehicle/<int:vehicle_id>', methods=['PUT'])
@@ -244,7 +274,7 @@ def update_one_vehicle(vehicle_id):
     try:
         vehicle = Vehicle.query.get(vehicle_id)
         if vehicle is None:
-            return jsonify({"msg": f"Vehicle {vehicle_id} not found"}), 404
+            return jsonify({"msg": f"Vehicle {vehicle_id} no encontrado"}), 404
 
         body = request.get_json()
         vehicle.name = body.get("name", vehicle.name)
@@ -255,7 +285,7 @@ def update_one_vehicle(vehicle_id):
         return vehicle.serialize(), 200
 
     except Exception as error:
-        return jsonify({"msg": "Server error", "error": str(error)}), 500
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
     
 #Para obtener todos los vehiculos
 @app.route('/vehicles', methods=['GET'])
@@ -270,13 +300,26 @@ def get_one_vehicle(vehicle_id):
     try:
         vehicle = Vehicle.query.get(vehicle_id)
         if vehicle is None:
-            return jsonify ({"msg":f"Vehicle {vehicle_id} not found"}), 404
+            return jsonify ({"msg":f"Vehicle {vehicle_id} no encontrado"}), 404
         serialize_vehicle = vehicle.serialize()
         return serialize_vehicle, 200
     except Exception as error:
-        return jsonify ({"msg":"Server error", "error": str(error)}), 500
+        return jsonify ({"msg":"Error del servidor", "error": str(error)}), 500
     
+#Para eliminar vehiculos por id
+@app.route('/vehicles/<int:vehicle_id>', methods=['DELETE'])
+def delete_vehicle(vehicle_id):
+    try:
+        vehicle = Vehicle.query.get(vehicle_id)
+        if not vehicle:
+            return jsonify({"msg": f"Vehicle {vehicle_id} no encontrado"}), 404
 
+        db.session.delete(vehicle)
+        db.session.commit()
+        return jsonify({"msg": f"Vehicle {vehicle_id} ha sido eliminado satisfactoriamente"}), 200
+    except Exception as error:
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
+    
 #Endpoints de favoritos
 
 #Para todos los favoritos de un usuario
@@ -286,21 +329,21 @@ def get_favorites_of_user_id(user_id):
         user = User.query.get(user_id)
         
         if not user:
-            return jsonify({"msg": "The user dont exist"}), 404
+            return jsonify({"msg": "El usuario no existe"}), 404
 
         if len(user.favorites)<1:
-            return jsonify({"msg": "There are no favorites on the list"}), 404
+            return jsonify({"msg": "No hay favoritos en la lista"}), 404
         serialize_favorites = user.serialize_favorites()
         return serialize_favorites, 200
     except Exception as error: 
-        return jsonify ({"msg":"Server error", "error": str(error)}), 500
+        return jsonify ({"msg":"Error del servidor", "error": str(error)}), 500
 
 #Crear vehiculo favorito
 @app.route('/favorite/vehicle/<int:vehicle_id>/<int:user_id>', methods=['POST'])
 def create_favorite_vehicle(vehicle_id, user_id):
     try:
         if Favorite.query.filter_by(user_id = user_id,vehicle_id=vehicle_id).first():
-            return jsonify({"msg": f"Vehicle {vehicle_id} ya está agregago a favoritos"}), 404
+            return jsonify({"msg": f"Vehicle {vehicle_id} ya esta agregado a favoritos"}), 404
 
         new_favorite_vehicle = Favorite(
             user_id=user_id,
@@ -309,16 +352,16 @@ def create_favorite_vehicle(vehicle_id, user_id):
         db.session.add(new_favorite_vehicle)
         db.session.commit()
 
-        return jsonify({"msg": "Favorite Vehicle has been created successfully"}), 201
+        return jsonify({"msg": "Favorite Vehicle ha sido creado satisfactoriamente"}), 201
     except Exception as error:
-        return jsonify({"msg": "Server error", "error": str(error)}), 500
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
     
 #Para crear personaje favorito
 @app.route('/favorite/people/<int:people_id>/<int:user_id>', methods=['POST'])
 def create_favorite_people(people_id, user_id):
     try:
         if Favorite.query.filter_by(user_id = user_id,people_id=people_id).first():
-            return jsonify({"msg": f"People {people_id} ya está agregago a favoritos"}), 404
+            return jsonify({"msg": f"People {people_id} ya esta agregado a favoritos"}), 404
 
         new_favorite_people = Favorite(
             user_id=user_id,
@@ -327,16 +370,16 @@ def create_favorite_people(people_id, user_id):
         db.session.add(new_favorite_people)
         db.session.commit()
 
-        return jsonify({"msg": "Favorite Character has been created successfully"}), 201
+        return jsonify({"msg": "Favorite Character ha sido creado satisfactoriamente"}), 201
     except Exception as error:
-        return jsonify({"msg": "Server error", "error": str(error)}), 500
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
 
 #Para crear planeta favorito
 @app.route('/favorite/planet/<int:planet_id>/<int:user_id>', methods=['POST'])
 def create_favorite_planet(planet_id, user_id):
     try:
         if Favorite.query.filter_by(user_id = user_id,planet_id=planet_id).first():
-            return jsonify({"msg": f"Planet {planet_id} ya está agregago a favoritos"}), 404
+            return jsonify({"msg": f"Planet {planet_id} ya esta agregado a favoritos"}), 404
 
         new_favorite_planet = Favorite(
             user_id=user_id,
@@ -345,60 +388,61 @@ def create_favorite_planet(planet_id, user_id):
         db.session.add(new_favorite_planet)
         db.session.commit()
 
-        return jsonify({"msg": "Favorite Planet has been created successfully"}), 201
+        return jsonify({"msg": "Favorite Planet ha sido creado satisfactoriamente"}), 201
     except Exception as error:
-        return jsonify({"msg": "Server error", "error": str(error)}), 500
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
 
 #Para eliminar un vehiculo favorito
 @app.route('/favorite/vehicle/<int:vehicle_id>/<int:user_id>', methods=['DELETE'])
 def delete_favorite_vehicle(vehicle_id, user_id):
     try:
-        elimate_favorite_vehicle = Favorite.query.filter_by(user_id=user_id, vehicle_id=vehicle_id).first()
+        del_favorite_vehicle = Favorite.query.filter_by(user_id=user_id, vehicle_id=vehicle_id).first()
         
-        if not elimate_favorite_vehicle:
-            return jsonify({"msg": f"Vehicle {vehicle_id} no se encuentra en los favoritos del usuario {user_id}"}), 404
+        if not del_favorite_vehicle:
+            return jsonify({"msg": f"Vehicle {vehicle_id} no esta en la lista de favoritos {user_id}"}), 404
 
-        db.session.delete(elimate_favorite_vehicle)
+        db.session.delete(del_favorite_vehicle)
         db.session.commit()
 
-        return jsonify({"msg": f"Vehicle {vehicle_id} eliminado de los favoritos exitosamente"}), 200
+        return jsonify({"msg": f"Vehicle {vehicle_id} ha sido eliminado de favoritos"}), 200
 
     except Exception as error:
-        return jsonify({"msg": "Server error", "error": str(error)}), 500
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
+    
+#Para eliminar personaje favorito
+@app.route('/favorite/people/<int:people_id>/<int:user_id>', methods=['DELETE'])
+def delete_favorite_people(people_id, user_id):
+    try:
+        del_favorite_people = Favorite.query.filter_by(user_id=user_id, people_id=people_id).first()
+        
+        if not del_favorite_people:
+            return jsonify({"msg": f"People {people_id} no esta en la lista de favoritos {user_id}"}), 404
+
+        db.session.delete(del_favorite_people)
+        db.session.commit()
+
+        return jsonify({"msg": f"People {people_id} ha sido eliminado de favoritos"}), 200
+
+    except Exception as error:
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
 
 #Para eliminar planeta favorito
 @app.route('/favorite/planets/<int:planet_id>/<int:user_id>', methods=['DELETE'])
 def delete_favorite_planet(planet_id, user_id):
     try:
-        elimate_favorite_planet = Favorite.query.filter_by(user_id=user_id, planet_id=planet_id).first()
+        del_favorite_planet = Favorite.query.filter_by(user_id=user_id, planet_id=planet_id).first()
         
-        if not elimate_favorite_planet:
-            return jsonify({"msg": f"Planet {planet_id} no se encuentra en los favoritos del usuario {user_id}"}), 404
+        if not del_favorite_planet:
+            return jsonify({"msg": f"Planet {planet_id} no esta en la lista de favoritos {user_id}"}), 404
 
-        db.session.delete(elimate_favorite_planet)
+        db.session.delete(del_favorite_planet)
         db.session.commit()
 
-        return jsonify({"msg": f"Planet {planet_id} eliminado de los favoritos exitosamente"}), 200
+        return jsonify({"msg": f"Planet {planet_id} ha sido eliminado de favoritos"}), 200
 
     except Exception as error:
-        return jsonify({"msg": "Server error", "error": str(error)}), 500
+        return jsonify({"msg": "Error del servidor", "error": str(error)}), 500
 
-#Para eliminar personaje favorito
-@app.route('/favorite/people/<int:people_id>/<int:user_id>', methods=['DELETE'])
-def delete_favorite_people(people_id, user_id):
-    try:
-        elimate_favorite_people = Favorite.query.filter_by(user_id=user_id, people_id=people_id).first()
-        
-        if not elimate_favorite_people:
-            return jsonify({"msg": f"People {people_id} no se encuentra en los favoritos del usuario {user_id}"}), 404
-
-        db.session.delete(elimate_favorite_people)
-        db.session.commit()
-
-        return jsonify({"msg": f"People {people_id} eliminado de los favoritos exitosamente"}), 200
-
-    except Exception as error:
-        return jsonify({"msg": "Server error", "error": str(error)}), 500
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
